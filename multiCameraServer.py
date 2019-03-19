@@ -13,6 +13,7 @@ import numpy as np
 import cv2
 
 from cscore import CameraServer, VideoSource, UsbCamera, MjpegServer, CvSource
+import cscore
 from networktables import NetworkTablesInstance
 
 #   JSON format:
@@ -179,7 +180,7 @@ if __name__ == "__main__":
 
     mJpegServer = MjpegServer("cvServer", 1186)
 
-    cvSource = CvSource("CVSource", server.VdeoMpde.PixelFormat.kMJPEG, 160, 120, 30)
+    cvSource = CvSource("CVSource", cscore.VideoMode.PixelFormat.kMJPEG, 160, 120, 30)
 
     # loop forever
     while True:
