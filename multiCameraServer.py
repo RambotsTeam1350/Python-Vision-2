@@ -12,7 +12,7 @@ import sys
 import numpy as np
 import cv2
 
-from cscore import CameraServer, VideoSource, UsbCamera, MjpegServer, CvSource
+from cscore import CameraServer, VideoSource, UsbCamera, MjpegServer, CvSource, CvSink
 import cscore
 from networktables import NetworkTablesInstance
 
@@ -174,13 +174,16 @@ if __name__ == "__main__":
     server = CameraServer.getInstance()
     cameraZeroSink = server.getVideo()
 
+    print(cameraZeroSink.getSource())
+
     image = np.zeros(shape=(160,120,3), dtype=np.uint8)
 
-    outPutStream = server.putVideo("inverted",160,120)
+    outPutStream = server.putVideo("mask",160,120)
 
     mJpegServer = MjpegServer("cvServer", 1186)
 
     cvSource = CvSource("CVSource", cscore.VideoMode.PixelFormat.kMJPEG, 160, 120, 30)
+
 
     # loop forever
     while True:
@@ -189,5 +192,20 @@ if __name__ == "__main__":
             outPutStream.notifyError(cameraZeroSink.getError())
             print (cameraZeroSink.getError())
             continue
-        cv2.rectangle(image, (20, 60), (140, 120), (255, 255, 255), 5)
-        cvSource.putFrame(image)
+        #image2 = cv2.rectangle(image, (20, 60), (140, 120), (255, 255, 255), 5)
+        #outPutStream.putFrame(image)
+
+        #cvImage = cv2.imread(imageProcess, 1)
+        lower_blue = np.array([30, 84, 50])
+        upper_blue = np.array([100, 255, 255])
+
+        #135, 84, 50
+        #120, 100, 100
+
+        hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+        mask = cv2.inRange(hsv, lower_blue, upper_blue)
+
+        outPutStream.putFrame(mask)
+
+        coordinates = cv2.findNonZero(mask)
+        print(coordinates)
