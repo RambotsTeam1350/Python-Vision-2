@@ -139,7 +139,7 @@ def startCamera(config):
     print("Starting camera '{}' on {}".format(config.name, config.path))
     inst = CameraServer.getInstance()
     camera = UsbCamera(config.name, config.path)
-    server = inst.startAutomaticCapture(camera=camera, return_server=True)
+    server = inst.startAutomaticCapture(camera=camera, return_server=True)  #PUT STUFF HERE =======
 
     camera.setConfigJson(json.dumps(config.config))
     camera.setConnectionStrategy(VideoSource.ConnectionStrategy.kKeepOpen)
@@ -187,6 +187,7 @@ if __name__ == "__main__":
 
     # loop forever
     while True:
+        start = time.time()
         status,image = cameraZeroSink.grabFrame(image, 30)
         if status == 0:
             outPutStream.notifyError(cameraZeroSink.getError())
@@ -196,11 +197,8 @@ if __name__ == "__main__":
         #outPutStream.putFrame(image)
 
         #cvImage = cv2.imread(imageProcess, 1)
-        lower_blue = np.array([30, 84, 50])
+        lower_blue = np.array([30, 84, 70])  #TESTING VALUE AT 70: SHOULD STOP DETECTING WIERD BLACKS =======
         upper_blue = np.array([100, 255, 255])
-
-        #135, 84, 50
-        #120, 100, 100
 
         hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
         mask = cv2.inRange(hsv, lower_blue, upper_blue)
@@ -208,4 +206,39 @@ if __name__ == "__main__":
         outPutStream.putFrame(mask)
 
         coordinates = cv2.findNonZero(mask)
-        print(coordinates)
+
+
+        newCoords = np.squeeze(coordinates)
+
+        print(newCoords.shape, "Squeezed Coordinates")
+
+
+        print(time.time()-start)
+        start = time.time()
+        print(coordinates.shape)
+        xList = []
+        yList = []
+        for i in range(coordinates.shape[0]):
+            xList.append(coordinates[i, 0, 0])
+            yList.append(coordinates[i, 0, 1])
+
+        xList.sort()
+
+        print(len(xList))
+
+        #ZERO,    10%,    90%,    MAX  ============
+        print(xList[0], xList[int(len(xList)*.1)], xList[int(len(xList)*.9)], xList[len(xList)])
+
+        print(time.time()-start)
+
+        print(" ")
+        print("Next Frame")
+        print(" ")
+
+
+        #Squeezed Coordinates Shape
+        #CV2 Running time
+        #Coordinates Shape
+        #Sorted XList
+        #ZERO,    10%,    90%,    MAX  ============
+        #Time of List manipulation and printing
